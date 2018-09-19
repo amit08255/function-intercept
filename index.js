@@ -63,5 +63,49 @@ function interceptAsync(fn) {
     return prepareWrapper(wrapper);
 }
 
+function before(listener) {
+    return (proto, prop) => {
+        if (!Array.isArray(proto[prop][beforeListeners])) {
+            proto[prop] = intercept(proto[prop]);
+        }
+
+        proto[prop].before(listener);
+    }
+}
+
+function beforeAsync(listener) {
+    return (proto, prop) => {
+        if (!Array.isArray(proto[prop][beforeListeners])) {
+            proto[prop] = interceptAsync(proto[prop]);
+        }
+
+        proto[prop].before(listener);
+    }
+}
+
+function after(listener) {
+    return (proto, prop) => {
+        if (!Array.isArray(proto[prop][beforeListeners])) {
+            proto[prop] = intercept(proto[prop]);
+        }
+
+        proto[prop].after(listener);
+    }
+}
+
+function afterAsync(listener) {
+    return (proto, prop) => {
+        if (!Array.isArray(proto[prop][beforeListeners])) {
+            proto[prop] = interceptAsync(proto[prop]);
+        }
+
+        proto[prop].after(listener);
+    }
+}
+
 exports.intercept = exports.default = intercept;
 exports.interceptAsync = interceptAsync;
+exports.before = before;
+exports.beforeAsync = beforeAsync;
+exports.after = after;
+exports.afterAsync = afterAsync;
