@@ -52,29 +52,73 @@ function proxy(fn, handler) {
     return wrapper;
 }
 
+function decorate(handler) {
+    var decorator = function (proto, prop) {
+        var wrapper = proxy(proto[prop], handler);
+
+        for (var i = 0; i < decorator[beforeListeners].length; i++) {
+            wrapper.before(decorator[beforeListeners][i]);
+        }
+
+        for (var j = 0; j < decorator[afterListeners].length; j++) {
+            wrapper.after(decorator[afterListeners][j]);
+        }
+
+        proto[prop] = wrapper;
+    };
+
+    decorator[beforeListeners] = [];
+    decorator[afterListeners] = [];
+    decorator.before = function (listener) {
+        this[beforeListeners].push(listener);
+        return this;
+    };
+    decorator.after = function (listener) {
+        this[afterListeners].push(listener);
+        return this;
+    };
+
+    return decorator;
+}
+
+function runAsync(callback) {
+    if (typeof setImmediate == "function") {
+        setImmediate(() => callback());
+    } else if (typeof Promise == "function") {
+        Promise.resolve(null).then(() => callback()).catch(err => {
+            throw err;
+        });
+    } else {
+        setTimeout(() => callback(), 0);
+    }
+}
+
 function intercept(fn) {
-    return proxy(fn, function (target, thisArg, args) {
+    var handler = function (target, thisArg, args) {
         for (var i = 0; i < this[beforeListeners].length; i++) {
             this[beforeListeners][i].apply(thisArg, args);
         }
 
         var res = target.apply(thisArg, args);
 
-        for (var j = 0; j < this[afterListeners].length; j++) {
-            this[afterListeners][j].apply(thisArg, args);
-        }
+        runAsync(() => {
+            for (var j = 0; j < this[afterListeners].length; j++) {
+                this[afterListeners][j].apply(thisArg, args);
+            }
+        });
 
         return res;
-    });
+    };
+
+    return fn ? proxy(fn, handler) : decorate(handler);
 }
 
 function interceptAsync(fn) {
-    return proxy(fn, function (target, thisArg, args) {
+    var handler = function (target, thisArg, args) {
         var _this = this,
-            res = void 0,
             invoke = function (listeners, index) {
                 index = index || 0;
-                if (index >= listeners.length) return;
+                if (index >= listeners.length) return Promise.resolve(void 0);
 
                 let listener = listeners[index];
 
@@ -86,58 +130,16 @@ function interceptAsync(fn) {
 
         return invoke(_this[beforeListeners]).then(function () {
             return target.apply(thisArg, args);
-        }).then(function (_res) {
-            res = _res;
-            return invoke(_this[afterListeners]);
-        }).then(function () {
+        }).then(function (res) {
+            runAsync(() => invoke(_this[afterListeners]));
             return res;
+        }).catch(err => {
+            throw err;
         });
-    });
-}
+    };
 
-function before(listener) {
-    return function (proto, prop) {
-        if (proto[prop][beforeListeners] === undefined) {
-            proto[prop] = intercept(proto[prop]);
-        }
-
-        proto[prop].before(listener);
-    }
-}
-
-function beforeAsync(listener) {
-    return function (proto, prop) {
-        if (proto[prop][beforeListeners] === undefined) {
-            proto[prop] = interceptAsync(proto[prop]);
-        }
-
-        proto[prop].before(listener);
-    }
-}
-
-function after(listener) {
-    return function (proto, prop) {
-        if (proto[prop][afterListeners] === undefined) {
-            proto[prop] = intercept(proto[prop]);
-        }
-
-        proto[prop].after(listener);
-    }
-}
-
-function afterAsync(listener) {
-    return function (proto, prop) {
-        if (proto[prop][beforeListeners] === undefined) {
-            proto[prop] = interceptAsync(proto[prop]);
-        }
-
-        proto[prop].after(listener);
-    }
+    return fn ? proxy(fn, handler) : decorate(handler);
 }
 
 exports.intercept = exports.default = intercept;
 exports.interceptAsync = interceptAsync;
-exports.before = before;
-exports.beforeAsync = beforeAsync;
-exports.after = after;
-exports.afterAsync = afterAsync;

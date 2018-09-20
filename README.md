@@ -10,7 +10,7 @@ npm i function-intercepter
 
 ## Example
 
-### Basic
+### Basic Usage
 
 ```javascript
 const { intercept } = require("function-intercepter");
@@ -61,4 +61,44 @@ _echo("This is a log").then(() => {
 
     console.log(logs); // => ['This is a log']
 });
+```
+
+### Decorator Intercepter
+
+```typescript
+import { before, beforeAsync, after, afterAsync } from "function-intercepter";
+
+export class Test {
+    @intercept().before((str: string) => {
+        // the arguments passed to this function is the same as the one passed 
+        // to method.
+    }).before(function (str: string) {
+        // you can set multiple intercepter functions,
+        // since this isn't an arrow function, you can use the variable `this` 
+        // as well, it will reference to the instance as well.
+    }).after((str: string) => {
+        // ...
+    }).after(function (str: string) {
+        // ...
+    })
+    echo (str: string) {
+        // ...
+    }
+
+    @interceptAync().before(async (str: string) => {
+        // the arguments passed to this function is the same as the one passed 
+        // to method.
+    }).before(async function (str: string) {
+        // you can set multiple intercepter functions,
+        // since this isn't an arrow function, you can use the variable `this` 
+        // as well, it will reference to the instance as well.
+    }).after(async (str: string) => {
+        // ...
+    }).after(async function (str: string) {
+        // ...
+    })
+    async display(...args) {
+        // ...
+    }
+}
 ```

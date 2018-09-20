@@ -4,16 +4,16 @@ export interface Intercaptable {
     after(listener: (...args) => any): this;
 }
 
-export interface IntercaptableAsync extends Intercaptable {
+export interface AsyncIntercaptable extends Intercaptable {
     (...args): Promise<any>;
 }
 
-export type IntercaptableDecorator = (proto: any, prop: string) => void;
+export interface IntercaptableDecorator extends Intercaptable {
+    (proto: any, prop: string): void
+}
 
 export function intercept(fn: (...args) => any): Intercaptable;
-export function interceptAsync(fn: (...args) => any): IntercaptableAsync;
-export function before(listener: (...args) => any): IntercaptableDecorator;
-export function beforeAsync(listener: (...args) => any): IntercaptableDecorator;
-export function after(listener: (...args) => any): IntercaptableDecorator;
-export function afterAsync(listener: (...args) => any): IntercaptableDecorator;
+export function intercept(): IntercaptableDecorator;
+export function interceptAsync(fn: (...args) => any): AsyncIntercaptable;
+export function interceptAsync(): IntercaptableDecorator;
 export default intercept;
