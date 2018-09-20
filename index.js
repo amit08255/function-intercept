@@ -1,7 +1,9 @@
 "use strict";
 
-const beforeListeners = Symbol("beforeListeners");
-const afterListeners = Symbol("afterListeners");
+var proxy = require("fn-intercept").sync;
+var hasSymbol = typeof Symbol == "function";
+var beforeListeners = hasSymbol ? Symbol("beforeListeners") : "_beforeListeners";
+var afterListeners = hasSymbol ? Symbol("afterListeners") : "_afterListeners";
 
 function prepareWrapper(wrapper) {
     wrapper[beforeListeners] = [];
@@ -19,45 +21,52 @@ function prepareWrapper(wrapper) {
 }
 
 function intercept(fn) {
-    let wrapper = new Proxy(fn, {
-        apply: (target, thisArg, args) => {
-            wrapper[beforeListeners].forEach(listener => {
-                listener.apply(thisArg, args);
-            });
+    var wrapper = proxy(fn, function (target) {
+        var thisArg = this,
+            args = Array.prototype.slice.call(arguments, 1);
 
-            let res = target.apply(thisArg, args);
-
-            wrapper[afterListeners].forEach(listener => {
-                listener.apply(thisArg, args);
-            });
-
-            return res;
+        for (var i = 0; i < wrapper[beforeListeners].length; i++) {
+            wrapper[beforeListeners][i].apply(thisArg, args);
         }
+
+        var res = target.apply(thisArg, args);
+
+        for (var j = 0; j < wrapper[afterListeners].length; j++) {
+            wrapper[afterListeners][j].apply(thisArg, args);
+        }
+
+        return res;
     });
 
     return prepareWrapper(wrapper);
 }
 
 function interceptAsync(fn) {
-    let wrapper = new Proxy(fn, {
-        apply: (target, thisArg, args) => {
-            let res = void 0,
-                invoke = (listeners, index = 0) => {
-                    if (index >= listeners.length) return;
+    var wrapper = proxy(fn, function (target) {
+        var thisArg = this,
+            args = Array.prototype.slice.call(arguments, 1),
+            res = void 0,
+            invoke = function (listeners, index) {
+                index = index || 0;
+                if (index >= listeners.length) return;
 
-                    let listener = listeners[index];
+                let listener = listeners[index];
 
-                    return Promise.resolve(listener.apply(thisArg, args))
-                        .then(() => invoke(listeners, index + 1));
-                };
+                return Promise.resolve(listener.apply(thisArg, args))
+                    .then(function () {
+                        return invoke(listeners, index + 1);
+                    });
+            };
 
-            return Promise.resolve(invoke(wrapper[beforeListeners]))
-                .then(() => target.apply(thisArg, args))
-                .then(_res => {
-                    res = _res;
-                    return invoke(wrapper[afterListeners]);
-                }).then(() => res);
-        }
+        return Promise.resolve(invoke(wrapper[beforeListeners]))
+            .then(function () {
+                return target.apply(thisArg, args);
+            }).then(function (_res) {
+                res = _res;
+                return invoke(wrapper[afterListeners]);
+            }).then(function () {
+                return res;
+            });
     });
 
     return prepareWrapper(wrapper);
@@ -65,7 +74,7 @@ function interceptAsync(fn) {
 
 function before(listener) {
     return (proto, prop) => {
-        if (!Array.isArray(proto[prop][beforeListeners])) {
+        if (proto[prop][beforeListeners] === undefined) {
             proto[prop] = intercept(proto[prop]);
         }
 
@@ -75,7 +84,7 @@ function before(listener) {
 
 function beforeAsync(listener) {
     return (proto, prop) => {
-        if (!Array.isArray(proto[prop][beforeListeners])) {
+        if (proto[prop][beforeListeners] === undefined) {
             proto[prop] = interceptAsync(proto[prop]);
         }
 
@@ -85,7 +94,7 @@ function beforeAsync(listener) {
 
 function after(listener) {
     return (proto, prop) => {
-        if (!Array.isArray(proto[prop][beforeListeners])) {
+        if (proto[prop][afterListeners] === undefined) {
             proto[prop] = intercept(proto[prop]);
         }
 
@@ -95,7 +104,7 @@ function after(listener) {
 
 function afterAsync(listener) {
     return (proto, prop) => {
-        if (!Array.isArray(proto[prop][beforeListeners])) {
+        if (proto[prop][beforeListeners] === undefined) {
             proto[prop] = interceptAsync(proto[prop]);
         }
 

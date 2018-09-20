@@ -20,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/hyurl/function-intercepter/issues"
   },
-  "homepage": "https://github.com/hyurl/function-intercepter#readme"
+  "homepage": "https://github.com/hyurl/function-intercepter#readme",
+  "devDependencies": {
+    "tslib": "^1.9.3"
+  },
+  "dependencies": {
+    "fn-intercept": "^1.0.0"
+  }
 }

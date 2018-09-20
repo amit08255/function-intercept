@@ -8,7 +8,7 @@ export interface IntercaptableAsync extends Intercaptable {
     (...args): Promise<any>;
 }
 
-export interface IntercaptableDecorator extends Function { }
+export type IntercaptableDecorator = (proto: any, prop: string) => void;
 
 export function intercept(fn: (...args) => any): Intercaptable;
 export function interceptAsync(fn: (...args) => any): IntercaptableAsync;
