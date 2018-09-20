@@ -26,6 +26,21 @@ function proxy(fn, handler) {
         return this;
     };
 
+    Object.defineProperties(wrapper, {
+        name: {
+            configurable: true,
+            enumerable: false,
+            value: fn.name,
+            writable: false,
+        },
+        length: {
+            configurable: true,
+            enumerable: false,
+            value: fn.length,
+            writable: false,
+        }
+    });
+
     return wrapper;
 }
 
