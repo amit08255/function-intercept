@@ -24,7 +24,5 @@
   "devDependencies": {
     "tslib": "^1.9.3"
   },
-  "dependencies": {
-    "fn-intercept": "^1.0.0"
-  }
+  "dependencies": {}
 }

@@ -1,11 +1,20 @@
 "use strict";
 
-var proxy = require("fn-intercept").sync;
 var hasSymbol = typeof Symbol == "function";
 var beforeListeners = hasSymbol ? Symbol("beforeListeners") : "_beforeListeners";
 var afterListeners = hasSymbol ? Symbol("afterListeners") : "_afterListeners";
 
-function prepareWrapper(wrapper) {
+function proxy(fn, handler) {
+    if (typeof handler != "function") return fn;
+
+    function wrapper() {
+        return handler.apply(wrapper, [
+            fn,
+            this,
+            Array.prototype.slice.apply(arguments)
+        ]);
+    }
+
     wrapper[beforeListeners] = [];
     wrapper[afterListeners] = [];
     wrapper.before = function (listener) {
@@ -21,30 +30,24 @@ function prepareWrapper(wrapper) {
 }
 
 function intercept(fn) {
-    var wrapper = proxy(fn, function (target) {
-        var thisArg = this,
-            args = Array.prototype.slice.call(arguments, 1);
-
-        for (var i = 0; i < wrapper[beforeListeners].length; i++) {
-            wrapper[beforeListeners][i].apply(thisArg, args);
+    return proxy(fn, function (target, thisArg, args) {
+        for (var i = 0; i < this[beforeListeners].length; i++) {
+            this[beforeListeners][i].apply(thisArg, args);
         }
 
         var res = target.apply(thisArg, args);
 
-        for (var j = 0; j < wrapper[afterListeners].length; j++) {
-            wrapper[afterListeners][j].apply(thisArg, args);
+        for (var j = 0; j < this[afterListeners].length; j++) {
+            this[afterListeners][j].apply(thisArg, args);
         }
 
         return res;
     });
-
-    return prepareWrapper(wrapper);
 }
 
 function interceptAsync(fn) {
-    var wrapper = proxy(fn, function (target) {
-        var thisArg = this,
-            args = Array.prototype.slice.call(arguments, 1),
+    return proxy(fn, function (target, thisArg, args) {
+        var _this = this,
             res = void 0,
             invoke = function (listeners, index) {
                 index = index || 0;
@@ -58,18 +61,16 @@ function interceptAsync(fn) {
                     });
             };
 
-        return Promise.resolve(invoke(wrapper[beforeListeners]))
+        return Promise.resolve(invoke(_this[beforeListeners]))
             .then(function () {
                 return target.apply(thisArg, args);
             }).then(function (_res) {
                 res = _res;
-                return invoke(wrapper[afterListeners]);
+                return invoke(_this[afterListeners]);
             }).then(function () {
                 return res;
             });
     });
-
-    return prepareWrapper(wrapper);
 }
 
 function before(listener) {
