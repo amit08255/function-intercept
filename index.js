@@ -84,20 +84,19 @@ function interceptAsync(fn) {
                     });
             };
 
-        return Promise.resolve(invoke(_this[beforeListeners]))
-            .then(function () {
-                return target.apply(thisArg, args);
-            }).then(function (_res) {
-                res = _res;
-                return invoke(_this[afterListeners]);
-            }).then(function () {
-                return res;
-            });
+        return invoke(_this[beforeListeners]).then(function () {
+            return target.apply(thisArg, args);
+        }).then(function (_res) {
+            res = _res;
+            return invoke(_this[afterListeners]);
+        }).then(function () {
+            return res;
+        });
     });
 }
 
 function before(listener) {
-    return (proto, prop) => {
+    return function (proto, prop) {
         if (proto[prop][beforeListeners] === undefined) {
             proto[prop] = intercept(proto[prop]);
         }
@@ -107,7 +106,7 @@ function before(listener) {
 }
 
 function beforeAsync(listener) {
-    return (proto, prop) => {
+    return function (proto, prop) {
         if (proto[prop][beforeListeners] === undefined) {
             proto[prop] = interceptAsync(proto[prop]);
         }
@@ -117,7 +116,7 @@ function beforeAsync(listener) {
 }
 
 function after(listener) {
-    return (proto, prop) => {
+    return function (proto, prop) {
         if (proto[prop][afterListeners] === undefined) {
             proto[prop] = intercept(proto[prop]);
         }
@@ -127,7 +126,7 @@ function after(listener) {
 }
 
 function afterAsync(listener) {
-    return (proto, prop) => {
+    return function (proto, prop) {
         if (proto[prop][beforeListeners] === undefined) {
             proto[prop] = interceptAsync(proto[prop]);
         }
