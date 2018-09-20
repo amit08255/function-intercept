@@ -38,6 +38,14 @@ function proxy(fn, handler) {
             enumerable: false,
             value: fn.length,
             writable: false,
+        },
+        toString: {
+            configurable: true,
+            enumerable: false,
+            value: function toString() {
+                return fn.toString();
+            },
+            writable: true,
         }
     });
 
