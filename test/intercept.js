@@ -20,7 +20,7 @@ describe("intercept(fn: Function): Intercaptable", () => {
         assert.strictEqual(_sum(1, 2), sum(1, 2));
     });
 
-    it("should bind before intercepters as expected", (done) => {
+    it("should bind before and after intercepters as expected", (done) => {
         let logs = [];
         _sum.before((a, b) => {
             logs.push([a, b]);

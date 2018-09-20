@@ -10,7 +10,7 @@ describe("interceptAsync(fn: Function): AsyncIntercaptable", () => {
 
     let _sum = interceptAsync(sum);
 
-    it("should create an interceptable wrapper function as expected", (done) => {
+    it("should create an async interceptable wrapper function as expected", (done) => {
         try {
             assert.strictEqual(typeof _sum, "function");
             assert.strictEqual(_sum.length, 2);
@@ -27,16 +27,22 @@ describe("interceptAsync(fn: Function): AsyncIntercaptable", () => {
         }).then(done).catch(done);
     });
 
-    it("should bind before intercepters as expected", (done) => {
+    it("should bind async before and async after intercepters as expected", (done) => {
         let logs = [];
         _sum.before((a, b) => {
             logs.push([a, b]);
         }).before((a, b) => {
-            logs.push(a + b);
+            return new Promise((resolve) => {
+                logs.push(a + b);
+                resolve(void 0);
+            });
         }).after((a, b) => {
             logs.push([a, b]);
         }).after((a, b) => {
-            logs.push(a + b);
+            return new Promise((resolve) => {
+                logs.push(a + b);
+                resolve(void 0);
+            });
         });
 
         _sum(12, 13).then(res => {
