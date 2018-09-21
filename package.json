@@ -13,7 +13,11 @@
   },
   "keywords": [
     "intercepter",
-    "filter"
+    "filter",
+    "aop",
+    "proxy",
+    "decorator",
+    "Functional Programming"
   ],
   "author": "Ayon Lee <i@hyurl.com>",
   "license": "MIT",
