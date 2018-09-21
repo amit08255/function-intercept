@@ -4,7 +4,7 @@
 
 This module honors the principle of AOP (Aspect Oriented Programing) by adding 
 `before` and `after` intercepter functions to an existing function on the 
-language level, so no need of any framework to implement. More important, it 
+language level, so no need of any framework to implement. More importantly, it's 
 very handy and elegant.
 
 ## Install
@@ -33,13 +33,13 @@ _echo.before((str) => {
     // and they will be called sequentially.
     logs.push(str);
 }).after((str) => {
-    console.log("Log has been uotput and saved");
+    console.log("Log has been output and saved");
 });
 
 _echo("This is a log");
 // will output:
 // This is a log
-// Log has been uotput and saved
+// Log has been output and saved
 
 console.log(logs); // => ['This is a log']
 ```
@@ -56,16 +56,16 @@ function echo(str) {
 let _echo = interceptAsync(echo);
 let logs = [];
 
-_echo.before((str) => {
+_echo.before(async (str) => {
     logs.push(str);
-}).after((str) => {
-    console.log("Log has been uotput and saved");
+}).after(async (str) => {
+    console.log("Log has been output and saved");
 });
 
 _echo("This is a log").then(() => {
     // will output:
     // This is a log
-    // Log has been uotput and saved
+    // Log has been output and saved
 
     console.log(logs); // => ['This is a log']
 });
@@ -81,7 +81,7 @@ export class Test {
         // ...
     }).before(function (str: string) {
         // since this isn't an arrow function, you can use the variable `this` 
-        // as well, it will reference to the instance as well.
+        // as well, it will reference to the instance too.
     }).after((str: string) => {
         // ...
     }).after(function (str: string) {
@@ -95,7 +95,7 @@ export class Test {
         // ...
     }).before(async function (str: string) {
         // since this isn't an arrow function, you can use the variable `this` 
-        // as well, it will reference to the instance as well.
+        // as well, it will reference to the instance too.
     }).after(async (str: string) => {
         // ...
     }).after(async function (str: string) {
@@ -112,7 +112,7 @@ export class Test {
 Once any intercepter function returns `false`, the procedure will stop invoking 
 immediately, if a `before` intercepter returns `false`, not only all the 
 following intercepters will stop invoking, but the main function will also 
-return (`void`) immediately without invoking. Apart from this, you can whenever 
+return (`void`) immediately without invoking. Apart from that, you can whenever 
 you want throw an error to stop the procedure.
 
 ```javascript
@@ -129,7 +129,7 @@ _echo.before((str) => {
     logs.push(str);
     return false; // return `false` to stop the procedure.
 }).before((str) => {
-    // the function will never called
+    // this function will never be called
     console.log("Log has been saved");
 });
 
