@@ -91,14 +91,14 @@ export class Test {
         // ...
     }
 
-    @interceptAync().before(async (str: string) => {
+    @interceptAync().before(async (...args) => {
         // ...
-    }).before(async function (str: string) {
+    }).before(async function (...args) {
         // since this isn't an arrow function, you can use the variable `this` 
         // as well, it will reference to the instance too.
-    }).after(async (str: string) => {
+    }).after(async (...args) => {
         // ...
-    }).after(async function (str: string) {
+    }).after(async function (...args) {
         // ...
     })
     async display(...args) {
@@ -139,3 +139,10 @@ _echo("This is a log");
 
 console.log(logs); // => ['This is a log']
 ```
+
+## Notice
+
+Except `false` (and `Promise` in the async intercepter), any other returning 
+values are not concerned in the system, and will not affect the result of any 
+function in the chain. If you need to pass a state that shared through the 
+chain, pass an object reference instead.
