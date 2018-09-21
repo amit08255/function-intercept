@@ -87,7 +87,7 @@ export class Test {
     }).after(function (str: string) {
         // ...
     })
-    echo (str: string) {
+    echo(str: string) {
         // ...
     }
 
@@ -146,3 +146,8 @@ Except `false` (and `Promise` in the async intercepter), any other returning
 values are not concerned in the system, and will not affect the result of any 
 function in the chain. If you need to pass a state that shared through the 
 chain, pass an object reference instead.
+
+The difference between `intercept` and `interceptAsync` is that `interceptAsync`
+will always return a `Promise`d wrapper, regardless of the definition of the 
+original function, and all the intercepters along with the main function will be
+handled in a promise chain.
