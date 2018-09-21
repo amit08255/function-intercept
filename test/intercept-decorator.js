@@ -54,25 +54,12 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
         })
     ], Calculator.prototype, "diff");
 
-    it("should bind before and after intercepters as expected", (done) => {
+    it("should bind before and after intercepters as expected", () => {
         var cal = new Calculator(12, 13);
 
         logs1.push(cal.sum());
 
-        try {
-            assert.deepStrictEqual(logs1, [[12, 13], 25, 25]);
-        } catch (err) {
-            if (err) return done(err);
-        }
-
-        setTimeout(() => {
-            try {
-                assert.deepStrictEqual(logs1, [[12, 13], 25, 25, [13, 12], 1]);
-                done();
-            } catch (err) {
-                done(err);
-            }
-        }, 50);
+        assert.deepStrictEqual(logs1, [[12, 13], 25, [13, 12], 1, 25]);
     });
 
     it("should bind async before and async after intercepters as expected", (done) => {
@@ -81,20 +68,7 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
         cal.diff(12, 13).then(res => {
             logs2.push(res);
 
-            try {
-                assert.deepStrictEqual(logs2, [[12, 13], 25, -1]);
-            } catch (err) {
-                if (err) return done(err);
-            }
-
-            setTimeout(() => {
-                try {
-                    assert.deepStrictEqual(logs2, [[12, 13], 25, -1, [13, 12], 1]);
-                    done();
-                } catch (err) {
-                    done(err);
-                }
-            }, 50);
-        });
+            assert.deepStrictEqual(logs1, [[12, 13], 25, [13, 12], 1, 25]);
+        }).then(done).catch(done);
     });
 });

@@ -20,7 +20,7 @@ describe("intercept(fn: Function): Intercaptable", () => {
         assert.strictEqual(_sum(1, 2), sum(1, 2));
     });
 
-    it("should bind before and after intercepters as expected", (done) => {
+    it("should bind before and after intercepters as expected", () => {
         let logs = [];
         _sum.before((a, b) => {
             logs.push([a, b]);
@@ -34,19 +34,6 @@ describe("intercept(fn: Function): Intercaptable", () => {
 
         logs.push(_sum(12, 13));
 
-        try {
-            assert.deepStrictEqual(logs, [[12, 13], 25, 25]);
-        } catch (err) {
-            if (err) return done(err);
-        }
-
-        setTimeout(() => {
-            try {
-                assert.deepStrictEqual(logs, [[12, 13], 25, 25, [12, 13], 25]);
-                done();
-            } catch (err) {
-                done(err);
-            }
-        }, 50);
+        assert.deepStrictEqual(logs, [[12, 13], 25, [12, 13], 25, 25]);
     })
 });

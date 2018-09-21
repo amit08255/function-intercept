@@ -48,20 +48,7 @@ describe("interceptAsync(fn: Function): AsyncIntercaptable", () => {
         _sum(12, 13).then(res => {
             logs.push(res);
 
-            try {
-                assert.deepStrictEqual(logs, [[12, 13], 25, 25]);
-            } catch (err) {
-                if (err) return done(err);
-            }
-
-            setTimeout(() => {
-                try {
-                    assert.deepStrictEqual(logs, [[12, 13], 25, 25, [12, 13], 25]);
-                    done();
-                } catch (err) {
-                    done(err);
-                }
-            }, 50);
-        });
+            assert.deepStrictEqual(logs, [[12, 13], 25, [12, 13], 25, 25]);
+        }).then(done).catch(done);
     })
 });

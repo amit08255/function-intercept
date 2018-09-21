@@ -81,31 +81,21 @@ function decorate(handler) {
     return decorator;
 }
 
-function runAsync(callback) {
-    if (typeof setImmediate == "function") {
-        setImmediate(() => callback());
-    } else if (typeof Promise == "function") {
-        Promise.resolve(null).then(() => callback()).catch(err => {
-            throw err;
-        });
-    } else {
-        setTimeout(() => callback(), 0);
-    }
-}
-
 function intercept(fn) {
     var handler = function (target, thisArg, args) {
         for (var i = 0; i < this[beforeListeners].length; i++) {
-            this[beforeListeners][i].apply(thisArg, args);
+            if (false === this[beforeListeners][i].apply(thisArg, args)) {
+                return;
+            }
         }
 
         var res = target.apply(thisArg, args);
 
-        runAsync(() => {
-            for (var j = 0; j < this[afterListeners].length; j++) {
-                this[afterListeners][j].apply(thisArg, args);
+        for (var j = 0; j < this[afterListeners].length; j++) {
+            if (false === this[afterListeners][j].apply(thisArg, args)) {
+                break;
             }
-        });
+        }
 
         return res;
     };
@@ -122,17 +112,31 @@ function interceptAsync(fn) {
 
                 let listener = listeners[index];
 
-                return Promise.resolve(listener.apply(thisArg, args))
-                    .then(function () {
-                        return invoke(listeners, index + 1);
-                    });
-            };
+                return new Promise(function (resolve, reject) {
+                    try {
+                        var res = listener.apply(thisArg, args);
+                        resolve(res);
+                    } catch (err) {
+                        reject(err);
+                    }
+                }).then(function (res) {
+                    return res === false ? res : invoke(listeners, index + 1);
+                });
+            },
+            shouldContinue = true;
 
-        return invoke(_this[beforeListeners]).then(function () {
-            return target.apply(thisArg, args);
+        return invoke(_this[beforeListeners]).then(function (res) {
+            if (res === false) {
+                shouldContinue = false;
+            } else {
+                return target.apply(thisArg, args);
+            }
         }).then(function (res) {
-            runAsync(() => invoke(_this[afterListeners]));
-            return res;
+            if (!shouldContinue) {
+                return res;
+            } else {
+                return invoke(_this[afterListeners]).then(() => res);
+            }
         }).catch(err => {
             throw err;
         });

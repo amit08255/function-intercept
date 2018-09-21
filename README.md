@@ -2,6 +2,11 @@
 
 **Binding and calling actions before and/or after invoking a function.**
 
+This module honors the principle of AOP (Aspect Oriented Programing) by adding 
+`before` and `after` intercepter functions to an existing function on the 
+language level, so no need of any framework to implement. More important, it 
+very handy and elegant.
+
 ## Install
 
 ```sh
@@ -22,7 +27,10 @@ function echo(str) {
 let _echo = intercept(echo);
 let logs = [];
 
-_echo.bafore((str) => {
+_echo.before((str) => {
+    // the arguments passed to a intercepter function is the same as the ones 
+    // passed to the main function. You set any number of intercepters you want,
+    // and they will be called sequentially.
     logs.push(str);
 }).after((str) => {
     console.log("Log has been uotput and saved");
@@ -48,7 +56,7 @@ function echo(str) {
 let _echo = interceptAsync(echo);
 let logs = [];
 
-_echo.bafore((str) => {
+_echo.before((str) => {
     logs.push(str);
 }).after((str) => {
     console.log("Log has been uotput and saved");
@@ -66,14 +74,12 @@ _echo("This is a log").then(() => {
 ### Decorator Intercepter
 
 ```typescript
-import { before, beforeAsync, after, afterAsync } from "function-intercepter";
+import { intercept, interceptAsync } from "function-intercepter";
 
 export class Test {
     @intercept().before((str: string) => {
-        // the arguments passed to this function is the same as the one passed 
-        // to method.
+        // ...
     }).before(function (str: string) {
-        // you can set multiple intercepter functions,
         // since this isn't an arrow function, you can use the variable `this` 
         // as well, it will reference to the instance as well.
     }).after((str: string) => {
@@ -86,10 +92,8 @@ export class Test {
     }
 
     @interceptAync().before(async (str: string) => {
-        // the arguments passed to this function is the same as the one passed 
-        // to method.
+        // ...
     }).before(async function (str: string) {
-        // you can set multiple intercepter functions,
         // since this isn't an arrow function, you can use the variable `this` 
         // as well, it will reference to the instance as well.
     }).after(async (str: string) => {
@@ -101,4 +105,37 @@ export class Test {
         // ...
     }
 }
+```
+
+### Stop Procedure
+
+Once any intercepter function returns `false`, the procedure will stop invoking 
+immediately, if a `before` intercepter returns `false`, not only all the 
+following intercepters will stop invoking, but the main function will also 
+return (`void`) immediately without invoking. Apart from this, you can whenever 
+you want throw an error to stop the procedure.
+
+```javascript
+const { intercept } = require("function-intercepter");
+
+function echo(str) {
+    console.log(str);
+}
+
+let _echo = intercept(echo);
+let logs = [];
+
+_echo.before((str) => {
+    logs.push(str);
+    return false; // return `false` to stop the procedure.
+}).before((str) => {
+    // the function will never called
+    console.log("Log has been saved");
+});
+
+// `_echo()` will return immediately without invoking.
+_echo("This is a log");
+// will output nothing
+
+console.log(logs); // => ['This is a log']
 ```
