@@ -34,7 +34,7 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
         }).after(function () {
             logs1.push(this.b - this.a);
         })
-    ], Calculator.prototype, "sum");
+    ], Calculator.prototype, "sum", null);
 
     __decorate([
         interceptAsync().before(function () {
@@ -52,7 +52,7 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
                 resolve(void 0);
             });
         })
-    ], Calculator.prototype, "diff");
+    ], Calculator.prototype, "diff", null);
 
     it("should bind before and after intercepters as expected", () => {
         var cal = new Calculator(12, 13);

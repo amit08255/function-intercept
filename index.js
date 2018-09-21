@@ -53,7 +53,7 @@ function proxy(fn, handler) {
 }
 
 function decorate(handler) {
-    var decorator = function (proto, prop) {
+    var decorator = function (proto, prop, desc) {
         var wrapper = proxy(proto[prop], handler);
 
         for (var i = 0; i < decorator[beforeListeners].length; i++) {
@@ -64,7 +64,11 @@ function decorate(handler) {
             wrapper.after(decorator[afterListeners][j]);
         }
 
-        proto[prop] = wrapper;
+        if (desc) {
+            desc.value = wrapper;
+        } else {
+            proto[prop] = wrapper;
+        }
     };
 
     decorator[beforeListeners] = [];
