@@ -11,7 +11,7 @@ export interface InterceptableDecorator<T> {
 
 export function intercept<T>(fn: T): T & Interceptable;
 export function intercept<T = any>(): InterceptableDecorator<T>;
-export function interceptAsync<T>(fn: T): (ReturnType<T> extends Promise<any> ? T : (...args) => Promise<ReturnType<T>>) & Interceptable;
+export function interceptAsync<T extends (...args) => any>(fn: T): (ReturnType<T> extends Promise<any> ? T : (...args) => Promise<ReturnType<T>>) & Interceptable;
 export function interceptAsync<T = any>(): InterceptableDecorator<T>;
 
 export default intercept;

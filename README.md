@@ -104,6 +104,19 @@ export class Test {
     async display(...args) {
         // ...
     }
+
+    // for convenience, you can call the decorator multiple times to bind 
+    // intercepters, but BE AWARE that the invoking sequence of decorators are 
+    // upside down.
+    @intercept().before(() => {
+        // this function will be called next
+    })
+    @intercept().before(() => {
+        // this function will be called first
+    })
+    echo(...args) {
+        // ...
+    }
 }
 ```
 
