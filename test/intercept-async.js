@@ -3,7 +3,7 @@
 const assert = require("assert");
 const interceptAsync = require("..").interceptAsync;
 
-describe("interceptAsync(fn: Function): AsyncIntercaptable", () => {
+describe("interceptAsync(fn: Function): Interceptable", () => {
     function sum(a, b) {
         return a + b;
     }

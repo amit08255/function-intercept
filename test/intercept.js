@@ -3,7 +3,7 @@
 const assert = require("assert");
 const intercept = require("..").intercept;
 
-describe("intercept(fn: Function): Intercaptable", () => {
+describe("intercept(fn: Function): Interceptable", () => {
     function sum(a, b) {
         return a + b;
     }

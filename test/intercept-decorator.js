@@ -8,6 +8,7 @@ const interceptAsync = require("..").interceptAsync;
 describe("@intercept(): InterceptableDecorator and @interceptAsync(): InterceptableDecorator", () => {
     let logs1 = [];
     let logs2 = [];
+    let logs3 = [];
 
     class Calculator {
         constructor(a, b) {
@@ -22,6 +23,10 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
         diff() {
             return Promise.resolve(this.a - this.b);
         }
+    }
+
+    Calculator.prototype.times = function times() {
+        return this.a * this.b;
     }
 
     __decorate([
@@ -54,6 +59,19 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
         })
     ], Calculator.prototype, "diff", null);
 
+    __decorate([
+        intercept().before(function () {
+            logs3.push(this.a + this.b);
+        }).after(function () {
+            logs3.push(this.b - this.a);
+        }),
+        intercept().before(function () {
+            logs3.push([this.a, this.b]);
+        }).after(function () {
+            logs3.push([this.b, this.a]);
+        })
+    ], Calculator.prototype, "times", null);
+
     it("should bind before and after intercepters as expected", () => {
         var cal = new Calculator(12, 13);
 
@@ -70,5 +88,13 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
 
             assert.deepStrictEqual(logs1, [[12, 13], 25, [13, 12], 1, 25]);
         }).then(done).catch(done);
+    });
+
+    it("should call intercept decorator multiple times as expected", () => {
+        var cal = new Calculator(12, 13);
+
+        logs3.push(cal.times());
+
+        assert.deepStrictEqual(logs3, [[12, 13], 25, [13, 12], 1, 12 * 13]);
     });
 });

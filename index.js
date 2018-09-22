@@ -1,11 +1,26 @@
 "use strict";
 
 var hasSymbol = typeof Symbol == "function";
-var beforeListeners = hasSymbol ? Symbol("beforeListeners") : "_beforeListeners";
-var afterListeners = hasSymbol ? Symbol("afterListeners") : "_afterListeners";
+var _before = hasSymbol ? Symbol("beforeListeners") : "_beforeListeners";
+var _after = hasSymbol ? Symbol("afterListeners") : "_afterListeners";
+
+function setup(wrapper) {
+    wrapper[_before] = [];
+    wrapper[_after] = [];
+    wrapper.before = function (listener) {
+        this[_before].push(listener);
+        return this;
+    };
+    wrapper.after = function (listener) {
+        this[_after].push(listener);
+        return this;
+    };
+}
 
 function proxy(fn, handler) {
-    if (typeof handler != "function") return fn;
+    if (typeof handler != "function") {
+        throw new TypeError("the target to intercept must be a function");
+    }
 
     function wrapper() {
         return handler.apply(wrapper, [
@@ -15,18 +30,15 @@ function proxy(fn, handler) {
         ]);
     }
 
-    wrapper[beforeListeners] = [];
-    wrapper[afterListeners] = [];
-    wrapper.before = function (listener) {
-        this[beforeListeners].push(listener);
-        return this;
-    };
-    wrapper.after = function (listener) {
-        this[afterListeners].push(listener);
-        return this;
-    };
+    setup(wrapper);
 
     Object.defineProperties(wrapper, {
+        intercepted: {
+            configurable: true,
+            enumerable: false,
+            value: true,
+            writable: false,
+        },
         name: {
             configurable: true,
             enumerable: false,
@@ -54,51 +66,30 @@ function proxy(fn, handler) {
 
 function decorate(handler) {
     var decorator = function (proto, prop, desc) {
-        var wrapper = proxy(proto[prop], handler);
+        var wrapper = desc && desc.value.intercepted
+            ? desc.value
+            : proxy(proto[prop], handler);
 
-        for (var i = 0; i < decorator[beforeListeners].length; i++) {
-            wrapper.before(decorator[beforeListeners][i]);
-        }
-
-        for (var j = 0; j < decorator[afterListeners].length; j++) {
-            wrapper.after(decorator[afterListeners][j]);
-        }
-
-        if (desc) {
-            desc.value = wrapper;
-        } else {
-            proto[prop] = wrapper;
-        }
+        wrapper[_before] = wrapper[_before].concat(decorator[_before]);
+        wrapper[_after] = wrapper[_after].concat(decorator[_after]);
+        desc ? desc.value = wrapper : proto[prop] = wrapper;
     };
 
-    decorator[beforeListeners] = [];
-    decorator[afterListeners] = [];
-    decorator.before = function (listener) {
-        this[beforeListeners].push(listener);
-        return this;
-    };
-    decorator.after = function (listener) {
-        this[afterListeners].push(listener);
-        return this;
-    };
+    setup(decorator);
 
     return decorator;
 }
 
 function intercept(fn) {
     var handler = function (target, thisArg, args) {
-        for (var i = 0; i < this[beforeListeners].length; i++) {
-            if (false === this[beforeListeners][i].apply(thisArg, args)) {
-                return;
-            }
+        for (var i = 0; i < this[_before].length; ++i) {
+            if (false === this[_before][i].apply(thisArg, args)) return;
         }
 
         var res = target.apply(thisArg, args);
 
-        for (var j = 0; j < this[afterListeners].length; j++) {
-            if (false === this[afterListeners][j].apply(thisArg, args)) {
-                break;
-            }
+        for (var j = 0; j < this[_after].length; ++j) {
+            if (false === this[_after][j].apply(thisArg, args)) break;
         }
 
         return res;
@@ -129,7 +120,7 @@ function interceptAsync(fn) {
             },
             shouldContinue = true;
 
-        return invoke(_this[beforeListeners]).then(function (res) {
+        return invoke(_this[_before]).then(function (res) {
             if (res === false) {
                 shouldContinue = false;
             } else {
@@ -139,7 +130,7 @@ function interceptAsync(fn) {
             if (!shouldContinue) {
                 return res;
             } else {
-                return invoke(_this[afterListeners]).then(() => res);
+                return invoke(_this[_after]).then(() => res);
             }
         }).catch(err => {
             throw err;
