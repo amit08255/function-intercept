@@ -4,8 +4,16 @@ const assert = require("assert");
 const interceptAsync = require("..").interceptAsync;
 
 describe("interceptAsync(fn: Function): Interceptable", () => {
+    /**
+     * @param {number} a 
+     * @param {number} b 
+     */
     function sum(a, b) {
         return a + b;
+    }
+
+    function isAsync(fn) {
+        return fn.toString().slice(0, 6) == "async ";
     }
 
     let _sum = interceptAsync(sum);
@@ -15,13 +23,14 @@ describe("interceptAsync(fn: Function): Interceptable", () => {
             assert.strictEqual(typeof _sum, "function");
             assert.strictEqual(_sum.length, 2);
             assert.strictEqual(_sum.name, "sum");
-            assert.strictEqual(_sum.toString(), sum.toString());
+            assert.strictEqual(_sum.toString(), (isAsync(sum) ? "" : "async ") + sum.toString());
             assert.strictEqual(typeof _sum.before, "function");
             assert.strictEqual(typeof _sum.after, "function");
+            assert.strictEqual(_sum.target, sum);
         } catch (err) {
             if (err) return done(err);
         }
-        
+
         _sum(1, 2).then(res => {
             assert.strictEqual(res, sum(1, 2));
         }).then(done).catch(done);

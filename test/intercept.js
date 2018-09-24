@@ -4,6 +4,10 @@ const assert = require("assert");
 const intercept = require("..").intercept;
 
 describe("intercept(fn: Function): Interceptable", () => {
+    /**
+     * @param {number} a 
+     * @param {number} b 
+     */
     function sum(a, b) {
         return a + b;
     }
@@ -17,6 +21,7 @@ describe("intercept(fn: Function): Interceptable", () => {
         assert.strictEqual(_sum.toString(), sum.toString());
         assert.strictEqual(typeof _sum.before, "function");
         assert.strictEqual(typeof _sum.after, "function");
+        assert.strictEqual(_sum.target, sum);
         assert.strictEqual(_sum(1, 2), sum(1, 2));
     });
 

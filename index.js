@@ -5,74 +5,73 @@
     var _before = hasSymbol ? Symbol("beforeListeners") : "_beforeListeners";
     var _after = hasSymbol ? Symbol("afterListeners") : "_afterListeners";
 
-    function setup(wrapper) {
-        wrapper[_before] = [];
-        wrapper[_after] = [];
-        wrapper.before = function (listener) {
-            this[_before].push(listener);
-            return this;
-        };
-        wrapper.after = function (listener) {
-            this[_after].push(listener);
-            return this;
-        };
+    function before(listener) {
+        this[_before].push(listener);
+        return this;
     }
 
-    function proxy(fn, handler) {
-        if (typeof handler != "function") {
+    function after(listener) {
+        this[_after].push(listener);
+        return this;
+    }
+
+    function set(target, prop, value, writable) {
+        Object.defineProperty(target, prop, {
+            configurable: true,
+            enumerable: false,
+            writable: !!writable,
+            value: value
+        });
+    }
+
+    function setup(wrapper) {
+        set(wrapper, _before, []);
+        set(wrapper, _after, []);
+        set(wrapper, "before", before, true);
+        set(wrapper, "after", after, true);
+    }
+
+    function proxy(target, handler, async) {
+        if (typeof target != "function") {
             throw new TypeError("the target to intercept must be a function");
+        } else if (target.constructor.name == "GeneratorFunction") {
+            throw new TypeError("the target to intercept must not be a generator function");
+        } else if (target.toString().slice(0, 6) == "class ") {
+            throw new TypeError("the target to intercept must not be an ES6 class");
         }
 
         function wrapper() {
             return handler.apply(wrapper, [
-                fn,
+                wrapper.target,
                 this,
                 Array.prototype.slice.apply(arguments)
             ]);
         }
 
         setup(wrapper);
+        set(wrapper, "intercepted", true);
+        set(wrapper, "target", target);
+        set(wrapper, "name", target.name);
+        set(wrapper, "length", target.length);
+        set(wrapper, "toString", function toString() {
+            var str = this.target.toString(),
+                isAsync = str.slice(0, 6) == "async ";
 
-        Object.defineProperties(wrapper, {
-            intercepted: {
-                configurable: true,
-                enumerable: false,
-                value: true,
-                writable: false,
-            },
-            name: {
-                configurable: true,
-                enumerable: false,
-                value: fn.name,
-                writable: false,
-            },
-            length: {
-                configurable: true,
-                enumerable: false,
-                value: fn.length,
-                writable: false,
-            },
-            toString: {
-                configurable: true,
-                enumerable: false,
-                value: function toString() {
-                    return fn.toString();
-                },
-                writable: true,
-            }
-        });
+            return (isAsync || !async) ? str : "async " + str;
+
+        }, true);
 
         return wrapper;
     }
 
-    function decorate(handler) {
+    function decorate(handler, async) {
         var decorator = function (proto, prop, desc) {
             var wrapper = desc && desc.value.intercepted
                 ? desc.value
-                : proxy(proto[prop], handler);
+                : proxy(proto[prop], handler, async);
 
-            wrapper[_before] = wrapper[_before].concat(decorator[_before]);
-            wrapper[_after] = wrapper[_after].concat(decorator[_after]);
+            set(wrapper, _before, wrapper[_before].concat(decorator[_before]));
+            set(wrapper, _after, wrapper[_after].concat(decorator[_after]));
             desc ? desc.value = wrapper : proto[prop] = wrapper;
         };
 
@@ -81,7 +80,7 @@
         return decorator;
     }
 
-    function intercept(fn) {
+    function intercept(target) {
         var handler = function (target, thisArg, args) {
             for (var i = 0; i < this[_before].length; ++i) {
                 if (false === this[_before][i].apply(thisArg, args)) return;
@@ -96,17 +95,17 @@
             return res;
         };
 
-        return fn ? proxy(fn, handler) : decorate(handler);
+        return target ? proxy(target, handler) : decorate(handler);
     }
 
-    function interceptAsync(fn) {
+    function interceptAsync(target) {
         var handler = function (target, thisArg, args) {
             var _this = this,
                 invoke = function (listeners, index) {
                     index = index || 0;
                     if (index >= listeners.length) return Promise.resolve(void 0);
 
-                    let listener = listeners[index];
+                    var listener = listeners[index];
 
                     return new Promise(function (resolve, reject) {
                         try {
@@ -138,7 +137,7 @@
             });
         };
 
-        return fn ? proxy(fn, handler) : decorate(handler);
+        return target ? proxy(target, handler, true) : decorate(handler, true);
     }
 
     if (typeof exports == "object") {
