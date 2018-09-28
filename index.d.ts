@@ -2,17 +2,17 @@ export interface Interceptable<T> {
     /** Returns the original function. */
     readonly target: T;
     /** Adds listeners that will be called before invoking the function. */
-    before(listener: (...args) => void | false): this;
+    before(listener: (...args) => false | void): this;
     /** Adds listeners that will be called after invoking the function. */
-    after(listener: (...args) => void | false): this;
+    after(listener: (...args) => false | void): this;
 }
 
 export interface InterceptableDecorator<T> {
     (proto: any, prop: string, desc?: PropertyDescriptor): void;
     /** Adds listeners that will be called before invoking the method. */
-    before(listener: (this: T, ...args) => void | false): this;
+    before(listener: (this: T, ...args) => false | void | Promise<false | void>): this;
     /** Adds listeners that will be called after invoking the method. */
-    after(listener: (this: T, ...args) => void | false): this;
+    after(listener: (this: T, ...args) => false | void | Promise<false | void>): this;
 }
 
 /** Intercepts the given function. */
