@@ -153,12 +153,19 @@ _echo("This is a log");
 console.log(logs); // => ['This is a log']
 ```
 
-## Notice
+## Signature Of A Intercepter
 
-Except `false` (and `Promise` in the async intercepter), any other returning 
-values are not concerned in the system, and will not affect the result of any 
-function in the chain. If you need to pass a state that shared through the 
-chain, pass an object reference instead.
+All the intercepters can accept the same parameters as the original function, 
+but they're optional.
+
+In a intercepter function, you can either return a value or not, if you do 
+return, only these types of value are concerned:
+
+- `false` Break the calling chain and stop the procedure.
+- `Array` The elements in the returning array will be passed as arguments to the
+    next intercepter and the main function.
+
+## Notice
 
 The difference between `intercept` and `interceptAsync` is that `interceptAsync`
 will always return a `Promise`d wrapper, regardless of the definition of the 

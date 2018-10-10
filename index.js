@@ -31,6 +31,10 @@
         set(wrapper, "after", after, true);
     }
 
+    function isArray(obj) {
+        return Object.prototype.toString.apply(obj) == "[object Array]";
+    }
+
     function proxy(target, handler, async) {
         if (typeof target != "function") {
             throw new TypeError("the target to intercept must be a function");
@@ -82,14 +86,23 @@
 
     function intercept(target) {
         var handler = function (target, thisArg, args) {
+            var returns;
             for (var i = 0; i < this[_before].length; ++i) {
-                if (false === this[_before][i].apply(thisArg, args)) return;
+                returns = this[_before][i].apply(thisArg, args);
+                if (false === returns)
+                    return;
+                else if (isArray(returns))
+                    args = returns;
             }
 
             var res = target.apply(thisArg, args);
 
             for (var j = 0; j < this[_after].length; ++j) {
-                if (false === this[_after][j].apply(thisArg, args)) break;
+                returns = this[_after][j].apply(thisArg, args);
+                if (false === returns)
+                    break;
+                else if (isArray(returns))
+                    args = returns;
             }
 
             return res;
@@ -109,13 +122,18 @@
 
                     return new Promise(function (resolve, reject) {
                         try {
-                            var res = listener.apply(thisArg, args);
-                            resolve(res);
+                            var returns = listener.apply(thisArg, args);
+                            resolve(returns);
                         } catch (err) {
                             reject(err);
                         }
-                    }).then(function (res) {
-                        return res === false ? res : invoke(listeners, index + 1);
+                    }).then(function (returns) {
+                        if (returns === false)
+                            return false;
+                        else if (isArray(returns))
+                            args = returns;
+
+                        return invoke(listeners, index + 1);
                     });
                 },
                 shouldContinue = true;

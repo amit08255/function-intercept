@@ -40,6 +40,7 @@ describe("interceptAsync(fn: Function): Interceptable", () => {
         let logs = [];
         _sum.before((a, b) => {
             logs.push([a, b]);
+            return [a + 1, b + 2];
         }).before((a, b) => {
             return new Promise((resolve) => {
                 logs.push(a + b);
@@ -47,6 +48,7 @@ describe("interceptAsync(fn: Function): Interceptable", () => {
             });
         }).after((a, b) => {
             logs.push([a, b]);
+            return [a + 1, b + 2];
         }).after((a, b) => {
             return new Promise((resolve) => {
                 logs.push(a + b);
@@ -57,7 +59,7 @@ describe("interceptAsync(fn: Function): Interceptable", () => {
         _sum(12, 13).then(res => {
             logs.push(res);
 
-            assert.deepStrictEqual(logs, [[12, 13], 25, [12, 13], 25, 25]);
+            assert.deepStrictEqual(logs, [[12, 13], 28, [13, 15], 31, 28]);
         }).then(done).catch(done);
     })
 });

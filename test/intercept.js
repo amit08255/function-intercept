@@ -29,16 +29,18 @@ describe("intercept(fn: Function): Interceptable", () => {
         let logs = [];
         _sum.before((a, b) => {
             logs.push([a, b]);
+            return [a + 1, b + 2];
         }).before((a, b) => {
             logs.push(a + b);
         }).after((a, b) => {
             logs.push([a, b]);
+            return [a + 1, b + 2];
         }).after((a, b) => {
             logs.push(a + b);
         });
 
         logs.push(_sum(12, 13));
 
-        assert.deepStrictEqual(logs, [[12, 13], 25, [12, 13], 25, 25]);
+        assert.deepStrictEqual(logs, [[12, 13], 28, [13, 15], 31, 28]);
     })
 });
