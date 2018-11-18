@@ -41,7 +41,10 @@
         } else if (target.constructor.name == "GeneratorFunction") {
             throw new TypeError("the target to intercept must not be a generator function");
         } else if (target.toString().slice(0, 6) == "class ") {
-            throw new TypeError("the target to intercept must not be an ES6 class");
+            throw new TypeError("the target to intercept must not be a class");
+        } else if (target.intercepted) {
+            // if the target is already intercepted, return it without modifying.
+            return target;
         }
 
         function wrapper() {

@@ -61,5 +61,10 @@ describe("interceptAsync(fn: Function): Interceptable", () => {
 
             assert.deepStrictEqual(logs, [[12, 13], 28, [13, 15], 31, 28]);
         }).then(done).catch(done);
-    })
+    });
+
+    it("should not create interceptable wrapper again if alreay intercepted", () => {
+        let sum2 = interceptAsync(_sum);
+        assert.strictEqual(sum2, _sum);
+    });
 });
