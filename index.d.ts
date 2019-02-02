@@ -36,9 +36,9 @@ export interface InterceptableAsyncDecorator<T> {
 export function intercept<T>(fn: T): T & Interceptable<T>;
 /** Gets a chained interceptable decorator. */
 export function intercept<T = any>(): InterceptableDecorator<T>;
-/** Intercepts the given fuction and run actions asynchornously and sequencially. */
+/** Intercepts the given function and run actions asynchronously and sequentially. */
 export function interceptAsync<T extends (...args) => any>(fn: T): (ReturnType<T> extends Promise<any> ? T : (...args) => Promise<ReturnType<T>>) & InterceptableAsync<T>;
-/** Gets a chained interceptable decorator and run actions asynchornously and sequencially. */
+/** Gets a chained interceptable decorator and run actions asynchronously and sequentially. */
 export function interceptAsync<T = any>(): InterceptableAsyncDecorator<T>;
 
 export default intercept;
