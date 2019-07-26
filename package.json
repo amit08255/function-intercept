@@ -1,9 +1,9 @@
 {
   "name": "function-intercepter",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "description": "Binding and calling actions before and/or after invoking a function.",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
   "scripts": {
     "test": "mocha"
   },
@@ -27,8 +27,12 @@
   "homepage": "https://github.com/hyurl/function-intercepter#readme",
   "devDependencies": {
     "@types/node": "^10.10.1",
-    "mocha": "^5.2.0",
-    "tslib": "^1.9.3"
+    "mocha": "^5.2.0"
   },
-  "dependencies": {}
+  "engines": {
+    "node": ">=6.0"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0"
+  }
 }

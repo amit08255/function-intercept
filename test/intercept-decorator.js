@@ -6,10 +6,6 @@ const intercept = require("..").intercept;
 const interceptAsync = require("..").interceptAsync;
 
 describe("@intercept(): InterceptableDecorator and @interceptAsync(): InterceptableDecorator", () => {
-    let logs1 = [];
-    let logs2 = [];
-    let logs3 = [];
-
     class Calculator {
         constructor(a, b) {
             this.a = a;
@@ -25,76 +21,50 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
         }
     }
 
-    Calculator.prototype.times = function times() {
-        return this.a * this.b;
-    }
-
     __decorate([
         intercept().before(function () {
-            logs1.push([this.a, this.b]);
+            this.a += 1;
+            this.b += 1;
         }).before(function () {
-            logs1.push(this.a + this.b);
-        }).after(function () {
-            logs1.push([this.b, this.a]);
-        }).after(function () {
-            logs1.push(this.b - this.a);
+            this.a *= this.a;
+            this.b *= this.b;
+        }).after(function (result) {
+            return result + 1;
+        }).after(function (result) {
+            return result * 2;
         })
     ], Calculator.prototype, "sum", null);
 
     __decorate([
         interceptAsync().before(function () {
-            logs2.push([this.a, this.b]);
+            this.a += 1;
+            this.b += 1;
         }).before(function () {
             return new Promise(resolve => {
-                logs2.push(this.a + this.b);
-                resolve(void 0);
+                this.a *= this.a;
+                this.b *= this.b;
+                resolve();
             });
-        }).after(function () {
-            logs2.push([this.b, this.a]);
-        }).after(function () {
+        }).after(function (result) {
+            return result + 1;
+        }).after(function (result) {
             return new Promise(resolve => {
-                logs2.push(this.b - this.a);
-                resolve(void 0);
+                resolve(result * 2);
             });
         })
     ], Calculator.prototype, "diff", null);
 
-    __decorate([
-        intercept().before(function () {
-            logs3.push(this.a + this.b);
-        }).after(function () {
-            logs3.push(this.b - this.a);
-        }),
-        intercept().before(function () {
-            logs3.push([this.a, this.b]);
-        }).after(function () {
-            logs3.push([this.b, this.a]);
-        })
-    ], Calculator.prototype, "times", null);
-
     it("should bind before and after intercepters as expected", () => {
-        var cal = new Calculator(12, 13);
+        var cal = new Calculator(1, 2);
 
-        logs1.push(cal.sum());
-
-        assert.deepStrictEqual(logs1, [[12, 13], 25, [13, 12], 1, 25]);
+        assert.strictEqual(cal.sum(), 28);
     });
 
     it("should bind async before and async after intercepters as expected", (done) => {
-        var cal = new Calculator(12, 13);
+        var cal = new Calculator(2, 1);
 
-        cal.diff(12, 13).then(res => {
-            logs2.push(res);
-
-            assert.deepStrictEqual(logs1, [[12, 13], 25, [13, 12], 1, 25]);
+        cal.diff().then(res => {
+            assert.strictEqual(res, 12);
         }).then(done).catch(done);
-    });
-
-    it("should call intercept decorator multiple times as expected", () => {
-        var cal = new Calculator(12, 13);
-
-        logs3.push(cal.times());
-
-        assert.deepStrictEqual(logs3, [[12, 13], 25, [13, 12], 1, 12 * 13]);
     });
 });

@@ -37,29 +37,22 @@ describe("interceptAsync(fn: Function): Interceptable", () => {
     });
 
     it("should bind async before and async after intercepters as expected", (done) => {
-        let logs = [];
-        _sum.before((a, b) => {
-            logs.push([a, b]);
-            return [a + 1, b + 2];
+        _sum.before((a, b) => { // 1, 2
+            return [a + 1, b + 1]; // 2, 3
         }).before((a, b) => {
             return new Promise((resolve) => {
-                logs.push(a + b);
-                resolve(void 0);
+                resolve([a * a, b * b]); // 4, 9
             });
-        }).after((a, b) => {
-            logs.push([a, b]);
-            return [a + 1, b + 2];
-        }).after((a, b) => {
+        }).after((result) => { // 13
+            return result + 1; // 14
+        }).after((result) => {
             return new Promise((resolve) => {
-                logs.push(a + b);
-                resolve(void 0);
+                resolve(result * 2); // 28
             });
         });
 
-        _sum(12, 13).then(res => {
-            logs.push(res);
-
-            assert.deepStrictEqual(logs, [[12, 13], 28, [13, 15], 31, 28]);
+        _sum(1, 2).then(res => {
+            assert.strictEqual(res, 28);
         }).then(done).catch(done);
     });
 

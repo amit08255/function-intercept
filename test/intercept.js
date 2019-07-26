@@ -26,22 +26,17 @@ describe("intercept(fn: Function): Interceptable", () => {
     });
 
     it("should bind before and after intercepters as expected", () => {
-        let logs = [];
-        _sum.before((a, b) => {
-            logs.push([a, b]);
-            return [a + 1, b + 2];
+        _sum.before((a, b) => { // 1, 2
+            return [a + 1, b + 1]; // 2, 3
         }).before((a, b) => {
-            logs.push(a + b);
-        }).after((a, b) => {
-            logs.push([a, b]);
-            return [a + 1, b + 2];
-        }).after((a, b) => {
-            logs.push(a + b);
+            return [a * a, b * b];  // 4, 9
+        }).after((result) => { // 13
+            return result + 1; // 14
+        }).after((result) => {
+            return result * 2; // 28
         });
 
-        logs.push(_sum(12, 13));
-
-        assert.deepStrictEqual(logs, [[12, 13], 28, [13, 15], 31, 28]);
+        assert.strictEqual(_sum(1, 2), 28);
     });
 
     it("should not create interceptable wrapper again if alreay intercepted", () => {
