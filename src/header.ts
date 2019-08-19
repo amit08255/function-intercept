@@ -8,15 +8,15 @@ export type Asynchronize<T extends Callable> =
 export type ResolveType<T extends Callable> =
     ReturnType<T> extends Promise<infer U> ? U : ReturnType<T>;
 
-export type PreReturnType<T extends Callable> = boolean | void | Parameters<T>;
+export type PreReturnType<T extends Callable> = symbol | void | Parameters<T>;
 
-export type PostReturnType<T extends Callable> = boolean | void | ResolveType<T>;
+export type PostReturnType<T extends Callable> = symbol | void | ResolveType<T>;
 
 export type PreIntercepter<T extends Callable = Callable> =
     (...args: Parameters<T>) => PreReturnType<T>;
 
 export type PostIntercepter<T extends Callable = Callable> =
-    (returns: ReturnType<T>) => boolean | void | ReturnType<T>;
+    (returns: ReturnType<T>) => symbol | void | ReturnType<T>;
 
 export type AsyncPreIntercepter<T extends Callable = Callable> =
     (...args: Parameters<T>) => PreReturnType<T> | Promise<PreReturnType<T>>;

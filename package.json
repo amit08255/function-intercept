@@ -1,6 +1,6 @@
 {
   "name": "function-intercepter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Binding and calling actions before and/or after invoking a function.",
   "main": "dist/index.js",
   "types": "src/index.ts",
