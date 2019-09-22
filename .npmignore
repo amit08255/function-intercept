@@ -1,0 +1,5 @@
+.*
+*.tgz
+test/
+node_modules/
+tsconfig.json

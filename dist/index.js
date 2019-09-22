@@ -52,19 +52,19 @@ function proxy(target, handler, async = false) {
     set(wrapper, "name", target.name);
     set(wrapper, "length", target.length);
     set(wrapper, "toString", function toString() {
-        var str = this.target.toString(), isAsync = str.slice(0, 6) == "async ";
+        let str = this.target.toString(), isAsync = str.slice(0, 6) == "async ";
         return (isAsync || !async) ? str : "async " + str;
     }, true);
     return wrapper;
 }
 function decorate(handler, async = false) {
     function decorator(proto, prop, desc) {
-        let wrapper = desc && desc.value.intercepted
+        let wrapper = desc.value.intercepted
             ? desc.value
-            : proxy(proto[prop], handler, async);
+            : proxy(desc.value, handler, async);
         set(wrapper, pre, wrapper[pre].concat(decorator[pre]));
         set(wrapper, post, wrapper[post].concat(decorator[post]));
-        desc ? desc.value = wrapper : proto[prop] = wrapper;
+        desc.value = proto[prop] = wrapper;
     }
     ;
     return setup(decorator);
@@ -102,7 +102,7 @@ function interceptAsync(target) {
                 else if (Array.isArray(returns))
                     args = returns;
             }
-            var res = yield target.apply(thisArg, args);
+            let res = yield target.apply(thisArg, args);
             for (let handler of this[post]) {
                 let returns = yield handler.call(thisArg, res);
                 if (intercept.BREAK === returns)

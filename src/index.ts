@@ -96,7 +96,7 @@ function proxy(
     set(wrapper, "name", target.name);
     set(wrapper, "length", target.length);
     set(wrapper, "toString", function toString(this: any) {
-        var str = this.target.toString(),
+        let str = this.target.toString(),
             isAsync = str.slice(0, 6) == "async ";
 
         return (isAsync || !async) ? str : "async " + str;
@@ -107,14 +107,19 @@ function proxy(
 }
 
 function decorate(handler: Callable, async = false) {
-    function decorator(proto: any, prop: string, desc: PropertyDescriptor) {
-        let wrapper = desc && desc.value.intercepted
+    function decorator(
+        proto: any,
+        prop: string,
+        desc: TypedPropertyDescriptor<any>
+    ) {
+        let wrapper = desc.value.intercepted
             ? desc.value
-            : proxy(proto[prop], handler, async);
+            : proxy(desc.value, handler, async);
 
         set(wrapper, pre, wrapper[pre].concat(decorator[pre]));
         set(wrapper, post, wrapper[post].concat(decorator[post]));
-        desc ? desc.value = wrapper : proto[prop] = wrapper;
+
+        desc.value = proto[prop] = wrapper;
     };
 
     return setup(decorator);
@@ -168,7 +173,7 @@ export function interceptAsync(target?: Callable): any {
                 args = returns;
         }
 
-        var res = await target.apply(thisArg, args);
+        let res = await target.apply(thisArg, args);
 
         for (let handler of this[post]) {
             let returns = await (<Callable>handler).call(thisArg, res);
