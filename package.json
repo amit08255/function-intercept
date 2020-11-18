@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
-    "prepublishOnly": "tsc",
-    "pretest": "tsc",
+    "prepublishOnly": "npx tsc",
+    "pretest": "npx tsc",
     "test": "mocha"
   },
   "repository": {
