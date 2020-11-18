@@ -11,7 +11,7 @@ import {
     InterceptableAsyncDecorator
 } from "./header";
 
-export {
+export type {
     Callable,
     Asynchronize,
     PreIntercepter,
@@ -24,7 +24,7 @@ export {
     InterceptableAsyncDecorator
 };
 
-const pre = Symbol("preHanlders");
+const pre = Symbol("preHandlers");
 const post = Symbol("postHandlers");
 
 function before(
