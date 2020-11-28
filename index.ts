@@ -1,43 +1,89 @@
-import {
-    Callable,
-    Asynchronize,
-    PreIntercepter,
-    AsyncPreIntercepter,
-    PostIntercepter,
-    AsyncPostIntercepter,
-    Interceptable,
-    InterceptableAsync,
-    InterceptableDecorator,
-    InterceptableAsyncDecorator
-} from "./header";
+export type Callable = (...args: any[]) => any;
 
-export type {
-    Callable,
-    Asynchronize,
-    PreIntercepter,
-    AsyncPreIntercepter,
-    PostIntercepter,
-    AsyncPostIntercepter,
-    Interceptable,
-    InterceptableAsync,
-    InterceptableDecorator,
-    InterceptableAsyncDecorator
-};
+export type Asynchronize<T extends Callable> =
+    ReturnType<T> extends Promise<any>
+    ? T
+    : (...args: Parameters<T>) => Promise<ReturnType<T>>;
+
+export type ResolveType<T extends Callable> =
+    ReturnType<T> extends Promise<infer U> ? U : ReturnType<T>;
+
+export type PreReturnType<T extends Callable> = symbol | void | Parameters<T>;
+
+export type PostReturnType<T extends Callable> = symbol | void | ResolveType<T>;
+
+export type PreInterceptor<T extends Callable = Callable> =
+    (...args: Parameters<T>) => PreReturnType<T>;
+
+export type PostInterceptor<T extends Callable = Callable> =
+    (returns: ReturnType<T>) => symbol | void | ReturnType<T>;
+
+export type AsyncPreInterceptor<T extends Callable = Callable> =
+    (...args: Parameters<T>) => PreReturnType<T> | Promise<PreReturnType<T>>;
+
+export type AsyncPostInterceptor<T extends Callable = Callable> =
+    (returns: ResolveType<T>) => PostReturnType<T> | Promise<PostReturnType<T>>;
+
+export interface Interceptable<T extends Callable = Callable> {
+    /** Returns the original function. */
+    readonly target: T;
+    /** Adds handlers that will be called before invoking the function. */
+    before(handler: PreInterceptor<T>): this;
+    /** Adds handlers that will be called after invoking the function. */
+    after(handler: PostInterceptor<T>): this;
+}
+
+export interface InterceptableAsync<T extends Callable = Callable> {
+    /** Returns the original function. */
+    readonly target: T;
+    /** Adds handlers that will be called before invoking the function. */
+    before(handler: AsyncPreInterceptor<T>): this;
+    /** Adds handlers that will be called after invoking the function. */
+    after(handler: AsyncPostInterceptor<T>): this;
+}
+
+export interface InterceptableDecorator<T extends Callable = Callable> {
+    (proto: any, prop: string, desc?: PropertyDescriptor): void;
+    /** Adds handlers that will be called before invoking the method. */
+    before(handler: PreInterceptor<T>): this;
+    /** Adds handlers that will be called after invoking the method. */
+    after(handler: PostInterceptor<T>): this;
+}
+
+export interface InterceptableAsyncDecorator<T extends Callable = Callable> {
+    (proto: any, prop: string, desc?: PropertyDescriptor): void;
+    /** Adds handlers that will be called before invoking the method. */
+    before(handler: AsyncPreInterceptor<T>): this;
+    /** Adds handlers that will be called after invoking the method. */
+    after(handler: AsyncPostInterceptor<T>): this;
+}
+
+
+// deprecated names from the old package
+/** @deprecated */
+export type PreIntercepter = PreInterceptor;
+/** @deprecated */
+export type PostIntercepter = PostInterceptor;
+/** @deprecated */
+export type AsyncPreIntercepter = AsyncPreInterceptor;
+/** @deprecated */
+export type AsyncPostIntercepter = AsyncPostInterceptor;
+
 
 const pre = Symbol("preHandlers");
 const post = Symbol("postHandlers");
 
 function before(
-    this: Callable & { [pre]: Callable[] },
-    handler: PreIntercepter | AsyncPreIntercepter
+    this: Callable & { [pre]: Callable[]; },
+    handler: PreInterceptor | AsyncPreInterceptor
 ) {
     this[pre].push(handler);
     return this;
 }
 
 function after(
-    this: Callable & { [post]: Callable[] },
-    handler: PostIntercepter | AsyncPostIntercepter
+    this: Callable & { [post]: Callable[]; },
+    handler: PostInterceptor | AsyncPostInterceptor
 ) {
     this[post].push(handler);
     return this;
@@ -67,7 +113,7 @@ function setup(wrapper: Callable) {
 }
 
 function proxy(
-    target: Callable & { intercepted?: boolean },
+    target: Callable & { intercepted?: boolean; },
     handler: Callable,
     async = false
 ) {
@@ -82,9 +128,9 @@ function proxy(
         return target;
     }
 
-    function wrapper(this: any) {
+    function wrapper(this: any): any {
         return handler.apply(wrapper, [
-            wrapper["target"],
+            (<any>wrapper)["target"],
             this,
             Array.prototype.slice.apply(arguments)
         ]);
@@ -116,8 +162,8 @@ function decorate(handler: Callable, async = false) {
             ? desc.value
             : proxy(desc.value, handler, async);
 
-        set(wrapper, pre, wrapper[pre].concat(decorator[pre]));
-        set(wrapper, post, wrapper[post].concat(decorator[post]));
+        set(wrapper, pre, wrapper[pre].concat((<any>decorator)[pre]));
+        set(wrapper, post, wrapper[post].concat((<any>decorator)[post]));
 
         desc.value = proto[prop] = wrapper;
     };
