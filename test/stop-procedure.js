@@ -1,3 +1,4 @@
+/* global describe, it */
 "use strict";
 
 const assert = require("assert");
@@ -5,7 +6,7 @@ const intercept = require("..").intercept;
 const interceptAsync = require("..").interceptAsync;
 
 describe("Handle error when any presents", () => {
-    it("should stop running the procedure when an intercepter returns BREAK", () => {
+    it("should stop running the procedure when an interceptor returns BREAK", () => {
         function sum(a, b) {
             return a + b;
         }
@@ -25,7 +26,7 @@ describe("Handle error when any presents", () => {
         assert.deepStrictEqual(logs, [void 0]);
     });
 
-    it("should stop running the async procedure when an intercepter returns BREAK", (done) => {
+    it("should stop running the async procedure when an interceptor returns BREAK", (done) => {
         function sum(a, b) {
             return a + b;
         }

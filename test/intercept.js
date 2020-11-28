@@ -1,3 +1,4 @@
+/* global describe, it */
 "use strict";
 
 const assert = require("assert");
@@ -25,7 +26,7 @@ describe("intercept(fn: Function): Interceptable", () => {
         assert.strictEqual(_sum(1, 2), sum(1, 2));
     });
 
-    it("should bind before and after intercepters as expected", () => {
+    it("should bind before and after interceptors as expected", () => {
         _sum.before((a, b) => { // 1, 2
             return [a + 1, b + 1]; // 2, 3
         }).before((a, b) => {

@@ -1,3 +1,4 @@
+/* global describe, it */
 "use strict";
 
 const assert = require("assert");
@@ -36,7 +37,7 @@ describe("interceptAsync(fn: Function): Interceptable", () => {
         }).then(done).catch(done);
     });
 
-    it("should bind async before and async after intercepters as expected", (done) => {
+    it("should bind async before and async after interceptors as expected", (done) => {
         _sum.before((a, b) => { // 1, 2
             return [a + 1, b + 1]; // 2, 3
         }).before((a, b) => {

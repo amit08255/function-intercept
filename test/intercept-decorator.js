@@ -1,3 +1,4 @@
+/* global describe, it */
 "use strict";
 
 const assert = require("assert");
@@ -54,13 +55,13 @@ describe("@intercept(): InterceptableDecorator and @interceptAsync(): Intercepta
         })
     ], Calculator.prototype, "diff", null);
 
-    it("should bind before and after intercepters as expected", () => {
+    it("should bind before and after interceptors as expected", () => {
         var cal = new Calculator(1, 2);
 
         assert.strictEqual(cal.sum(), 28);
     });
 
-    it("should bind async before and async after intercepters as expected", (done) => {
+    it("should bind async before and async after interceptors as expected", (done) => {
         var cal = new Calculator(2, 1);
 
         cal.diff().then(res => {
