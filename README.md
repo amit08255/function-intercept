@@ -1,4 +1,4 @@
-# Function-Interceptor
+# function-intercept
 
 **Binding and calling actions before and/or after invoking a function.**
 
@@ -9,7 +9,7 @@ to modify the input and output of an function in a handy and elegant way.
 ## Install
 
 ```sh
-npm i function-interceptor
+npm i function-intercept
 ```
 
 ### In Deno
@@ -17,9 +17,9 @@ npm i function-interceptor
 Just import this package directly:
 
 ```ts
-import { intercept } from "https://deno.land/x/function_interceptor/index.ts";
+import { intercept } from "https://deno.land/x/function_intercept/index.ts";
 // Or
-import { intercept } from "https://github.com/hyurl/function-interceptor/raw/master/index.ts";
+import { intercept } from "https://github.com/hyurl/function-intercept/raw/master/index.ts";
 ```
 
 ## Example
@@ -27,7 +27,7 @@ import { intercept } from "https://github.com/hyurl/function-interceptor/raw/mas
 ### Basic Usage
 
 ```javascript
-import { intercept } from "function-interceptor";
+import { intercept } from "function-intercept";
 
 function sum(a, b) {
     return a + b;
@@ -65,7 +65,7 @@ console.log(_sum(1, 2));
 ### Async Interceptor
 
 ```javascript
-import { interceptAsync } from "function-interceptor";
+import { interceptAsync } from "function-intercept";
 
 async function sum(a, b) {
     return a + b;
@@ -92,7 +92,7 @@ _sum.before(async (a, b) => {
 ### Decorator Interceptor
 
 ```typescript
-import { intercept, interceptAsync } from "function-interceptor";
+import { intercept, interceptAsync } from "function-intercept";
 
 export class Test {
     @intercept().before((str: string) => {
@@ -146,7 +146,7 @@ also return (`void`) immediately without invoking. Apart from that, you can,
 whenever you want, throw an error to stop the procedure.
 
 ```javascript
-import { intercept } from "function-interceptor";
+import { intercept } from "function-intercept";
 
 function echo(str) {
     console.log(str);

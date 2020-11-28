@@ -1,5 +1,5 @@
 {
-  "name": "function-interceptor",
+  "name": "function-intercept",
   "version": "1.1.0",
   "description": "Binding and calling actions before and/or after invoking a function.",
   "main": "index.js",
@@ -13,9 +13,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hyurl/function-interceptor.git"
+    "url": "git+https://github.com/hyurl/function-intercept.git"
   },
   "keywords": [
+    "intercept",
     "interceptor",
     "filter",
     "aop",
@@ -26,9 +27,9 @@
   "author": "A-yon Lee <i@hyurl.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hyurl/function-interceptor/issues"
+    "url": "https://github.com/hyurl/function-intercept/issues"
   },
-  "homepage": "https://github.com/hyurl/function-interceptor#readme",
+  "homepage": "https://github.com/hyurl/function-intercept#readme",
   "devDependencies": {
     "@types/node": "^12.19.5",
     "mocha": "^5.2.0"
